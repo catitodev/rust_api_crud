@@ -1,0 +1,19 @@
+[package]
+name = "rust_api_crud"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+# Runtime assíncrono alternativo ao tokio
+async-std = { version = "1.12.0", features = ["attributes"] }
+# Framework web ergonômico e moderno
+tide = "0.16"
+# Biblioteca de serialização/deserialização 
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+# Para trabalhar com timestamps
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+# Para testes HTTP
+surf = "2.3"
