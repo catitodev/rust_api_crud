@@ -350,6 +350,8 @@ async fn main() -> tide::Result<()> {
     println!("   1. POST /auth/login com {{\"username\":\"admin\",\"password\":\"admin123\"}}");
     println!("   2. Use o token retornado: Authorization: Bearer <token>");
     
-    app.listen(&address).await?;
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+let addr = format!("0.0.0.0:{}", port);
+app.listen(addr).await?;
     Ok(())
 }
