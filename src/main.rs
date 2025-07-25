@@ -328,10 +328,7 @@ async fn main() -> tide::Result<()> {
     });
     
     // Usar a porta definida pelo Railway ou 8080 localmente
-    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let address = format!("0.0.0.0:{}", port);
-    
-    println!("🚀 Servidor rodando em {}", address);
+       
     println!("🔐 Autenticação JWT habilitada");
     println!("📖 Documentação das rotas:");
     println!("  POST   /auth/login     - Fazer login (receber token)");
@@ -351,7 +348,8 @@ async fn main() -> tide::Result<()> {
     println!("   2. Use o token retornado: Authorization: Bearer <token>");
     
     let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("0.0.0.0:{}", port);
+    println!("🚀 Servidor rodando em {}", addr);
 app.listen(addr).await?;
     Ok(())
 }
