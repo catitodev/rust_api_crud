@@ -297,6 +297,22 @@ async fn get_user_by_id(req: Request<AppState>) -> Result {
     }
 }
 
+// CORREÇÃO PRINCIPAL: Rota raiz e catch-all
+async fn root_handler(_req: Request<AppState>) -> Result {
+    let mut response = Response::new(StatusCode::Ok);
+    response.set_body(r#"{"message": "API funcionando! Acesse /health para verificar status"}"#);
+    response.set_content_type("application/json");
+    Ok(response)
+}
+
+// Handler para rotas não encontradas
+async fn not_found_handler(_req: Request<AppState>) -> Result {
+    let mut response = Response::new(StatusCode::NotFound);
+    response.set_body(r#"{"error": "Endpoint não encontrado", "available_routes": ["/", "/health", "/auth/login", "/auth/verify", "/users", "/users/:id"]}"#);
+    response.set_content_type("application/json");
+    Ok(response)
+}
+
 // Função principal
 #[async_std::main]
 async fn main() -> tide::Result<()> {
@@ -308,6 +324,9 @@ async fn main() -> tide::Result<()> {
     
     // Middleware para logs
     app.with(tide::log::LogMiddleware::new());
+    
+    // CORREÇÃO 1: Adicionar rota raiz
+    app.at("/").get(root_handler);
     
     // ROTAS DE AUTENTICAÇÃO
     app.at("/auth/login").post(login);
@@ -324,13 +343,20 @@ async fn main() -> tide::Result<()> {
     
     // Health check
     app.at("/health").get(|_| async move {
-        Ok(r#"{"status": "healthy", "auth": "enabled"}"#)
+        Ok(r#"{"status": "healthy", "auth": "enabled", "timestamp": "2024-01-01T00:00:00Z"}"#)
     });
     
-    // Usar a porta definida pelo Railway ou 8080 localmente
-       
+    // CORREÇÃO 2: Handler para rotas não encontradas (deve ser o último)
+    app.at("*").all(not_found_handler);
+    
+    // CORREÇÃO 3: Configuração de porta mais robusta
+    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
+    let host = std::env::var("HOST").unwrap_or_else(|_| "0.0.0.0".to_string());
+    let addr = format!("{}:{}", host, port);
+    
     println!("🔐 Autenticação JWT habilitada");
     println!("📖 Documentação das rotas:");
+    println!("  GET    /               - Rota raiz (teste básico)");
     println!("  POST   /auth/login     - Fazer login (receber token)");
     println!("  GET    /auth/verify    - Verificar token");
     println!("  📖 ROTAS PÚBLICAS:");
@@ -346,10 +372,12 @@ async fn main() -> tide::Result<()> {
     println!("🔑 Para acessar rotas protegidas:");
     println!("   1. POST /auth/login com {{\"username\":\"admin\",\"password\":\"admin123\"}}");
     println!("   2. Use o token retornado: Authorization: Bearer <token>");
+    println!("");
+    println!("🚀 Servidor rodando em http://{}", addr);
+    println!("🌐 Teste local: http://localhost:{}", port);
     
-    let port = std::env::var("PORT").unwrap_or_else(|_| "8080".to_string());
-    let addr = format!("0.0.0.0:{}", port);
-    println!("🚀 Servidor rodando em {}", addr);
-app.listen(addr).await?;
+    // CORREÇÃO 4: Tratamento simplificado
+    app.listen(&addr).await?;
+    println!("✅ Servidor parou normalmente");
     Ok(())
 }
